@@ -1,57 +1,78 @@
-import React from 'react';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { Link, Tabs } from 'expo-router';
-import { Pressable } from 'react-native';
-
-import Colors from '@/constants/Colors';
-import { useColorScheme } from '@/components/useColorScheme';
-import { useClientOnlyValue } from '@/components/useClientOnlyValue';
-
-// You can explore the built-in icon families and icons on the web at https://icons.expo.fyi/
-function TabBarIcon(props: {
-  name: React.ComponentProps<typeof FontAwesome>['name'];
-  color: string;
-}) {
-  return <FontAwesome size={28} style={{ marginBottom: -3 }} {...props} />;
-}
+import { Tabs } from 'expo-router';
+import { Gamepad as GamepadIcon, Trophy, Settings } from 'lucide-react-native';
 
 export default function TabLayout() {
-  const colorScheme = useColorScheme();
-
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: Colors[colorScheme ?? 'light'].tint,
-        // Disable the static render of the header on web
-        // to prevent a hydration error in React Navigation v6.
-        headerShown: useClientOnlyValue(false, true),
-      }}>
+        headerShown: true,
+        headerStyle: {
+          backgroundColor: '#1a1a1a',
+          height: 100,
+        },
+        headerTitleStyle: {
+          display: 'none',
+        },
+        headerTintColor: '#ffffff',
+        tabBarStyle: {
+          display: 'none',
+        },
+        tabBarActiveTintColor: '#4f46e5',
+        tabBarInactiveTintColor: '#888',
+      }}
+    >
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Tab One',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
           headerRight: () => (
-            <Link href="/modal" asChild>
-              <Pressable>
-                {({ pressed }) => (
-                  <FontAwesome
-                    name="info-circle"
-                    size={25}
-                    color={Colors[colorScheme ?? 'light'].text}
-                    style={{ marginRight: 15, opacity: pressed ? 0.5 : 1 }}
-                  />
-                )}
-              </Pressable>
-            </Link>
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              gap: 20, 
+              paddingRight: 20 
+            }}>
+              <GamepadIcon size={24} color="#4f46e5" />
+              <Trophy size={24} color="#888" />
+              <Settings size={24} color="#888" />
+            </div>
           ),
         }}
       />
       <Tabs.Screen
-        name="two"
+        name="leaderboard"
         options={{
-          title: 'Tab Two',
-          tabBarIcon: ({ color }) => <TabBarIcon name="code" color={color} />,
+          headerRight: () => (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              gap: 20, 
+              paddingRight: 20 
+            }}>
+              <GamepadIcon size={24} color="#888" />
+              <Trophy size={24} color="#4f46e5" />
+              <Settings size={24} color="#888" />
+            </div>
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name="settings"
+        options={{
+          headerRight: () => (
+            <div style={{ 
+              display: 'flex', 
+              flexDirection: 'row', 
+              alignItems: 'center', 
+              gap: 20, 
+              paddingRight: 20 
+            }}>
+              <GamepadIcon size={24} color="#888" />
+              <Trophy size={24} color="#888" />
+              <Settings size={24} color="#4f46e5" />
+            </div>
+          ),
         }}
       />
     </Tabs>
