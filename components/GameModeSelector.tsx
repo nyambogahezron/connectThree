@@ -99,6 +99,7 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'Orbitron-Bold',
   },
   modesContainer: {
     gap: 8,
@@ -135,11 +136,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 2,
+    fontFamily: 'Orbitron-Bold',
   },
   modeSubtitle: {
     fontSize: 14,
     color: '#6b7280',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   selectedText: {
     color: '#ffffff',

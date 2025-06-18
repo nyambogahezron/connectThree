@@ -225,6 +225,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
     letterSpacing: -1,
+    fontFamily: 'Orbitron-Black',
   },
   subtitle: {
     fontSize: 16,
@@ -232,6 +233,7 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     fontWeight: '500',
     marginBottom: 12,
+    fontFamily: 'Orbitron-Regular',
   },
   modeButton: {
     flexDirection: 'row',
@@ -248,6 +250,7 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#4f46e5',
     marginLeft: 6,
+    fontFamily: 'Orbitron-Regular',
   },
   buttonContainer: {
     marginTop: 24,
@@ -275,6 +278,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 8,
+    fontFamily: 'Orbitron-Bold',
   },
   clearStatsButton: {
     backgroundColor: 'transparent',
@@ -290,5 +294,6 @@ const styles = StyleSheet.create({
     color: '#64748b',
     fontSize: 14,
     fontWeight: '600',
+    fontFamily: 'Orbitron-Regular',
   },
 });

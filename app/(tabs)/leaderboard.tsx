@@ -91,12 +91,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
     letterSpacing: -1,
+    fontFamily: 'Orbitron-Black',
   },
   subtitle: {
     fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   leaderboardContainer: {
     marginBottom: 30,
@@ -127,6 +129,7 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#374151',
     marginLeft: 8,
+    fontFamily: 'Orbitron-Bold',
   },
   playerInfo: {
     flex: 1,
@@ -136,11 +139,13 @@ const styles = StyleSheet.create({
     fontWeight: '700',
     color: '#1f2937',
     marginBottom: 4,
+    fontFamily: 'Orbitron-Bold',
   },
   playerStats: {
     fontSize: 14,
     color: '#6b7280',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   winRateContainer: {
     alignItems: 'center',
@@ -149,11 +154,13 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '800',
     color: '#059669',
+    fontFamily: 'Orbitron-Black',
   },
   winRateLabel: {
     fontSize: 12,
     color: '#6b7280',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   infoContainer: {
     backgroundColor: '#ffffff',
@@ -174,6 +181,7 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     marginBottom: 16,
     textAlign: 'center',
+    fontFamily: 'Orbitron-Bold',
   },
   rulesList: {
     gap: 8,
@@ -183,5 +191,6 @@ const styles = StyleSheet.create({
     color: '#374151',
     fontWeight: '500',
     lineHeight: 24,
+    fontFamily: 'Orbitron-Regular',
   },
 });

@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 8,
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   playerContainer: {
     flexDirection: 'row',
@@ -84,5 +85,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: '700',
     color: '#1f2937',
+    fontFamily: 'Orbitron-Bold',
   },
 });

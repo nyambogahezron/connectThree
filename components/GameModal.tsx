@@ -164,12 +164,14 @@ const styles = StyleSheet.create({
     fontWeight: '800',
     marginBottom: 8,
     textAlign: 'center',
+    fontFamily: 'Orbitron-Black',
   },
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
     marginBottom: 24,
     textAlign: 'center',
+    fontFamily: 'Orbitron-Regular',
   },
   buttonContainer: {
     width: '100%',
@@ -199,5 +201,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '700',
     marginLeft: 8,
+    fontFamily: 'Orbitron-Bold',
   },
 });

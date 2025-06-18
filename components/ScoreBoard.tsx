@@ -49,6 +49,7 @@ const styles = StyleSheet.create({
     color: '#1f2937',
     textAlign: 'center',
     marginBottom: 12,
+    fontFamily: 'Orbitron-Bold',
   },
   scoresContainer: {
     flexDirection: 'row',
@@ -69,11 +70,13 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: '600',
     color: '#374151',
+    fontFamily: 'Orbitron-Regular',
   },
   totalGames: {
     fontSize: 12,
     color: '#6b7280',
     textAlign: 'center',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
 });

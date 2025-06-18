@@ -15,7 +15,9 @@ import {
   Info,
   Heart,
   Mail,
+  BookOpen,
 } from 'lucide-react-native';
+import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 
 export default function SettingsScreen() {
@@ -34,6 +36,13 @@ export default function SettingsScreen() {
     if (Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
+  };
+
+  const handleTutorial = () => {
+    if (Platform.OS !== 'web') {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    }
+    router.push('/tutorial');
   };
 
   const SettingItem = ({ 
@@ -110,6 +119,17 @@ export default function SettingsScreen() {
         </View>
 
         <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Help & Support</Text>
+          
+          <SettingItem
+            icon={<BookOpen size={24} color="#4f46e5" />}
+            title="Tutorial"
+            subtitle="Learn how to play Connect 3"
+            onPress={handleTutorial}
+          />
+        </View>
+
+        <View style={styles.section}>
           <Text style={styles.sectionTitle}>About</Text>
           
           <SettingItem
@@ -162,12 +182,14 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 4,
     letterSpacing: -1,
+    fontFamily: 'Orbitron-Black',
   },
   subtitle: {
     fontSize: 16,
     color: '#64748b',
     textAlign: 'center',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   section: {
     marginBottom: 24,
@@ -178,6 +200,7 @@ const styles = StyleSheet.create({
     color: '#374151',
     marginBottom: 12,
     marginLeft: 4,
+    fontFamily: 'Orbitron-Bold',
   },
   settingItem: {
     backgroundColor: '#ffffff',
@@ -206,11 +229,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1f2937',
     marginBottom: 2,
+    fontFamily: 'Orbitron-Bold',
   },
   settingSubtitle: {
     fontSize: 14,
     color: '#6b7280',
     fontWeight: '500',
+    fontFamily: 'Orbitron-Regular',
   },
   toggle: {
     width: 48,
@@ -252,5 +277,6 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     fontWeight: '500',
     textAlign: 'center',
+    fontFamily: 'Orbitron-Regular',
   },
 });
