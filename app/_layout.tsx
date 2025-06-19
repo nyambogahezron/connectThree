@@ -56,7 +56,7 @@ export default function RootLayout() {
 				<Stack.Screen name='onboarding' options={{ headerShown: false }} />
 				<Stack.Screen name='terms' options={{ headerShown: false }} />
 				<Stack.Screen name='tutorial' options={{ headerShown: false }} />
-				<Stack.Screen name='(tabs)' options={{ headerShown: false }} />
+				<Stack.Screen name='(home)' options={{ headerShown: false }} />
 				<Stack.Screen name='+not-found' />
 			</Stack>
 			<StatusBar style='auto' />

@@ -165,7 +165,6 @@ export default function OnboardingScreen() {
 				scale.value = withSpring(1, { damping: 15, stiffness: 100 });
 			}, 300);
 		} else {
-			// Navigate to terms
 			router.replace('/terms');
 		}
 	};
