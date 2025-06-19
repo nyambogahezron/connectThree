@@ -10,7 +10,7 @@ import {
 } from 'react-native';
 import { Player, GameState } from '@/types/game';
 import { GameMode } from '@/hooks/useGameLogic';
-import { RotateCcw, Trophy, Bot, User } from 'lucide-react-native';
+import { RotateCcw, Trophy, Bot, User, Crown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 interface GameModalProps {
@@ -18,6 +18,7 @@ interface GameModalProps {
   gameState: GameState;
   winner: Player | null;
   gameMode: GameMode;
+  winType?: 'regular' | 'king';
   onPlayAgain: () => void;
   onClose: () => void;
 }
@@ -27,6 +28,7 @@ export const GameModal: React.FC<GameModalProps> = ({
   gameState,
   winner,
   gameMode,
+  winType = 'regular',
   onPlayAgain,
   onClose,
 }) => {
@@ -51,33 +53,48 @@ export const GameModal: React.FC<GameModalProps> = ({
 
   const getTitle = () => {
     if (gameState === 'won' && winner) {
-      if (gameMode.type === 'ai') {
-        return winner === 'red' ? 'AI Wins!' : 'You Win!';
+      if (winType === 'king') {
+        if (gameMode.type === 'ai') {
+          return winner === 'red' ? 'AI Achieves Ultimate Victory!' : 'You Are The Ultimate Winner!';
+        }
+        return `${winner.charAt(0).toUpperCase() + winner.slice(1)} Achieves Ultimate Victory!`;
+      } else {
+        if (gameMode.type === 'ai') {
+          return winner === 'red' ? 'AI Wins!' : 'You Win!';
+        }
+        return `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`;
       }
-      return `${winner.charAt(0).toUpperCase() + winner.slice(1)} Wins!`;
     }
     return "It's a Draw!";
   };
 
   const getSubtitle = () => {
     if (gameState === 'won') {
-      if (gameMode.type === 'ai') {
-        return winner === 'red' ? 'Better luck next time! 🤖' : 'Congratulations! 🎉';
+      if (winType === 'king') {
+        return winner === 'red' ? 'Three Kings United! 👑' : 'Three Kings United! 👑';
+      } else {
+        if (gameMode.type === 'ai') {
+          return winner === 'red' ? 'Better luck next time! 🤖' : 'Congratulations! 🎉';
+        }
+        return 'Congratulations! 🎉';
       }
-      return 'Congratulations! 🎉';
     }
     return 'Good game! 🤝';
   };
 
   const getWinnerColor = () => {
-    if (winner === 'red') return '#ef4444';
-    if (winner === 'yellow') return '#fbbf24';
+    if (winner === 'red') return winType === 'king' ? '#dc2626' : '#ef4444';
+    if (winner === 'yellow') return winType === 'king' ? '#d97706' : '#fbbf24';
     return '#6b7280';
   };
 
   const getIcon = () => {
     if (gameState === 'draw') {
       return <Text style={styles.drawEmoji}>🤝</Text>;
+    }
+    
+    if (winType === 'king') {
+      return <Crown size={48} color={getWinnerColor()} />;
     }
     
     if (gameMode.type === 'ai') {
@@ -113,6 +130,13 @@ export const GameModal: React.FC<GameModalProps> = ({
             {getTitle()}
           </Text>
           <Text style={styles.subtitle}>{getSubtitle()}</Text>
+
+          {winType === 'king' && (
+            <View style={styles.kingBadge}>
+              <Crown size={20} color="#ffffff" />
+              <Text style={styles.kingBadgeText}>Ultimate Victory</Text>
+            </View>
+          )}
 
           <View style={styles.buttonContainer}>
             <TouchableOpacity
@@ -160,7 +184,7 @@ const styles = StyleSheet.create({
     fontSize: 48,
   },
   title: {
-    fontSize: 28,
+    fontSize: 24,
     fontWeight: '800',
     marginBottom: 8,
     textAlign: 'center',
@@ -169,9 +193,25 @@ const styles = StyleSheet.create({
   subtitle: {
     fontSize: 16,
     color: '#6b7280',
-    marginBottom: 24,
+    marginBottom: 16,
     textAlign: 'center',
     fontFamily: 'Orbitron-Regular',
+  },
+  kingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fbbf24',
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 20,
+    marginBottom: 24,
+  },
+  kingBadgeText: {
+    color: '#ffffff',
+    fontSize: 14,
+    fontWeight: '700',
+    marginLeft: 6,
+    fontFamily: 'Orbitron-Bold',
   },
   buttonContainer: {
     width: '100%',

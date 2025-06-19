@@ -1,29 +1,55 @@
 import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
-import { GameStats } from '@/types/game';
+import { GameStats, GameVariant } from '@/types/game';
+import { Crown } from 'lucide-react-native';
 
 interface ScoreBoardProps {
   stats: GameStats;
+  gameVariant?: GameVariant;
 }
 
-export const ScoreBoard: React.FC<ScoreBoardProps> = ({ stats }) => {
+export const ScoreBoard: React.FC<ScoreBoardProps> = ({ 
+  stats, 
+  gameVariant = 'connect3' 
+}) => {
+  const currentStats = gameVariant === 'classic' 
+    ? {
+        redWins: stats.classicRedWins,
+        yellowWins: stats.classicYellowWins,
+        draws: stats.classicDraws,
+        totalGames: stats.classicTotalGames,
+      }
+    : {
+        redWins: stats.redWins,
+        yellowWins: stats.yellowWins,
+        draws: stats.draws,
+        totalGames: stats.totalGames,
+      };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.title}>Score Board</Text>
+      <View style={styles.titleContainer}>
+        <Text style={styles.title}>Score Board</Text>
+        {gameVariant === 'classic' && (
+          <Crown size={20} color="#fbbf24" />
+        )}
+      </View>
       <View style={styles.scoresContainer}>
         <View style={styles.scoreItem}>
           <View style={[styles.playerDisc, { backgroundColor: '#ef4444' }]} />
-          <Text style={styles.scoreText}>Red: {stats.redWins}</Text>
+          <Text style={styles.scoreText}>Red: {currentStats.redWins}</Text>
         </View>
         <View style={styles.scoreItem}>
           <View style={[styles.playerDisc, { backgroundColor: '#fbbf24' }]} />
-          <Text style={styles.scoreText}>Yellow: {stats.yellowWins}</Text>
+          <Text style={styles.scoreText}>Yellow: {currentStats.yellowWins}</Text>
         </View>
         <View style={styles.scoreItem}>
-          <Text style={styles.scoreText}>Draws: {stats.draws}</Text>
+          <Text style={styles.scoreText}>Draws: {currentStats.draws}</Text>
         </View>
       </View>
-      <Text style={styles.totalGames}>Total Games: {stats.totalGames}</Text>
+      <Text style={styles.totalGames}>
+        Total {gameVariant === 'classic' ? 'Classic' : 'Connect 3'} Games: {currentStats.totalGames}
+      </Text>
     </View>
   );
 };
@@ -43,12 +69,18 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
+  titleContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
+    gap: 8,
+  },
   title: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1f2937',
     textAlign: 'center',
-    marginBottom: 12,
     fontFamily: 'Orbitron-Bold',
   },
   scoresContainer: {

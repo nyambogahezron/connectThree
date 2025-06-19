@@ -1,25 +1,29 @@
 import React, { useRef, useEffect } from 'react';
-import { TouchableOpacity, StyleSheet, Animated, Platform } from 'react-native';
-import { Player } from '@/types/game';
+import { TouchableOpacity, StyleSheet, Animated, Platform, View } from 'react-native';
+import { CellState } from '@/types/game';
+import { Crown } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 interface GameCellProps {
-  player: Player | null;
+  cell: CellState;
   size: number;
   onPress: () => void;
   isWinning: boolean;
   disabled: boolean;
+  isConverting?: boolean;
 }
 
 export const GameCell: React.FC<GameCellProps> = ({
-  player,
+  cell,
   size,
   onPress,
   isWinning,
   disabled,
+  isConverting = false,
 }) => {
   const scaleAnim = useRef(new Animated.Value(1)).current;
   const pulseAnim = useRef(new Animated.Value(1)).current;
+  const convertAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     if (isWinning) {
@@ -41,6 +45,28 @@ export const GameCell: React.FC<GameCellProps> = ({
       pulseAnim.setValue(1);
     }
   }, [isWinning, pulseAnim]);
+
+  useEffect(() => {
+    if (isConverting) {
+      Animated.sequence([
+        Animated.timing(convertAnim, {
+          toValue: 1.3,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(convertAnim, {
+          toValue: 0.8,
+          duration: 200,
+          useNativeDriver: true,
+        }),
+        Animated.timing(convertAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [isConverting, convertAnim]);
 
   const handlePress = () => {
     if (disabled) return;
@@ -65,16 +91,22 @@ export const GameCell: React.FC<GameCellProps> = ({
     onPress();
   };
 
-  const getPlayerColor = () => {
-    switch (player) {
+  const getCellColor = () => {
+    switch (cell) {
       case 'red':
         return '#ef4444';
       case 'yellow':
         return '#fbbf24';
+      case 'red-king':
+        return '#dc2626';
+      case 'yellow-king':
+        return '#d97706';
       default:
         return '#ffffff';
     }
   };
+
+  const isKing = cell === 'red-king' || cell === 'yellow-king';
 
   return (
     <TouchableOpacity
@@ -88,15 +120,27 @@ export const GameCell: React.FC<GameCellProps> = ({
           {
             width: size,
             height: size,
-            backgroundColor: getPlayerColor(),
+            backgroundColor: getCellColor(),
             transform: [
               { scale: scaleAnim },
               { scale: pulseAnim },
+              { scale: convertAnim },
             ],
           },
           isWinning && styles.winningCell,
+          isKing && styles.kingCell,
         ]}
-      />
+      >
+        {isKing && (
+          <View style={styles.crownContainer}>
+            <Crown 
+              size={size * 0.4} 
+              color="#ffffff" 
+              strokeWidth={2}
+            />
+          </View>
+        )}
+      </Animated.View>
     </TouchableOpacity>
   );
 };
@@ -113,11 +157,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   winningCell: {
     shadowColor: '#fbbf24',
     shadowOpacity: 0.8,
     shadowRadius: 8,
     elevation: 10,
+  },
+  kingCell: {
+    borderWidth: 3,
+    borderColor: '#ffffff',
+    shadowColor: '#000',
+    shadowOpacity: 0.4,
+    shadowRadius: 6,
+    elevation: 8,
+  },
+  crownContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

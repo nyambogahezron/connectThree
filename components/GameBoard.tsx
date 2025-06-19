@@ -1,13 +1,14 @@
 import React from 'react';
 import { View, StyleSheet, Dimensions } from 'react-native';
 import { GameCell } from './GameCell';
-import { Board, WinCondition } from '@/types/game';
+import { Board, WinCondition, KingConversion } from '@/types/game';
 
 interface GameBoardProps {
   board: Board;
   winCondition: WinCondition | null;
   onColumnPress: (col: number) => void;
   isAnimating: boolean;
+  kingConversions?: KingConversion[];
 }
 
 const { width } = Dimensions.get('window');
@@ -21,11 +22,20 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   winCondition,
   onColumnPress,
   isAnimating,
+  kingConversions = [],
 }) => {
   const isWinningCell = (row: number, col: number): boolean => {
     if (!winCondition) return false;
     return winCondition.positions.some(([winRow, winCol]) => 
       winRow === row && winCol === col
+    );
+  };
+
+  const isConvertingCell = (row: number, col: number): boolean => {
+    return kingConversions.some(conversion =>
+      conversion.positions.some(([convRow, convCol]) =>
+        convRow === row && convCol === col
+      )
     );
   };
 
@@ -36,11 +46,12 @@ export const GameBoard: React.FC<GameBoardProps> = ({
           {row.map((cell, colIndex) => (
             <GameCell
               key={`${rowIndex}-${colIndex}`}
-              player={cell}
+              cell={cell}
               size={CELL_SIZE}
               onPress={() => onColumnPress(colIndex)}
               isWinning={isWinningCell(rowIndex, colIndex)}
               disabled={isAnimating}
+              isConverting={isConvertingCell(rowIndex, colIndex)}
             />
           ))}
         </View>
@@ -66,6 +77,6 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginBottom: CELL_MARGIN,
+    marginBottom: 4,
   },
 });
