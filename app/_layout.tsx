@@ -10,6 +10,7 @@ import {
 } from '@expo-google-fonts/orbitron';
 import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import * as SplashScreen from 'expo-splash-screen';
+import { initializeDatabase } from '@/lib/database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -23,6 +24,8 @@ export default function RootLayout() {
 
 	React.useEffect(() => {
 		async function prepare() {
+			// initialize database
+			await initializeDatabase();
 			try {
 				const [fontsLoaded, fontError] = useFonts({
 					'Orbitron-Regular': Orbitron_400Regular,

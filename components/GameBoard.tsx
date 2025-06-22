@@ -13,9 +13,13 @@ interface GameBoardProps {
 
 const { width } = Dimensions.get('window');
 const BOARD_PADDING = 20;
-const CELL_MARGIN = 4;
+const CELL_MARGIN = 3;
 const BOARD_WIDTH = width - (BOARD_PADDING * 2);
-const CELL_SIZE = (BOARD_WIDTH - (CELL_MARGIN * 4 * 2)) / 5;
+const AVAILABLE_WIDTH = BOARD_WIDTH - 32; // Account for board padding
+const CELL_SIZE = Math.min(
+  (AVAILABLE_WIDTH - (CELL_MARGIN * 4 * 2)) / 5, // 5 columns
+  60 // Maximum cell size
+);
 
 export const GameBoard: React.FC<GameBoardProps> = ({
   board,
@@ -40,27 +44,33 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   };
 
   return (
-    <View style={styles.board}>
-      {board.map((row, rowIndex) => (
-        <View key={rowIndex} style={styles.row}>
-          {row.map((cell, colIndex) => (
-            <GameCell
-              key={`${rowIndex}-${colIndex}`}
-              cell={cell}
-              size={CELL_SIZE}
-              onPress={() => onColumnPress(colIndex)}
-              isWinning={isWinningCell(rowIndex, colIndex)}
-              disabled={isAnimating}
-              isConverting={isConvertingCell(rowIndex, colIndex)}
-            />
-          ))}
-        </View>
-      ))}
+    <View style={styles.boardContainer}>
+      <View style={styles.board}>
+        {board.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.row}>
+            {row.map((cell, colIndex) => (
+              <GameCell
+                key={`${rowIndex}-${colIndex}`}
+                cell={cell}
+                size={CELL_SIZE}
+                onPress={() => onColumnPress(colIndex)}
+                isWinning={isWinningCell(rowIndex, colIndex)}
+                disabled={isAnimating}
+                isConverting={isConvertingCell(rowIndex, colIndex)}
+              />
+            ))}
+          </View>
+        ))}
+      </View>
     </View>
   );
 };
 
 const styles = StyleSheet.create({
+  boardContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   board: {
     backgroundColor: '#2563eb',
     borderRadius: 20,
@@ -73,10 +83,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 10,
     elevation: 15,
+    maxWidth: BOARD_WIDTH,
   },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginBottom: 4,
+    justifyContent: 'center',
+    marginBottom: 2,
   },
 });

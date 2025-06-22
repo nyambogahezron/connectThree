@@ -107,12 +107,14 @@ export const GameCell: React.FC<GameCellProps> = ({
   };
 
   const isKing = cell === 'red-king' || cell === 'yellow-king';
+  const crownSize = Math.max(size * 0.35, 16); // Ensure crown is visible but not too large
 
   return (
     <TouchableOpacity
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.8}
+      style={styles.cellContainer}
     >
       <Animated.View
         style={[
@@ -134,7 +136,7 @@ export const GameCell: React.FC<GameCellProps> = ({
         {isKing && (
           <View style={styles.crownContainer}>
             <Crown 
-              size={size * 0.4} 
+              size={crownSize} 
               color="#ffffff" 
               strokeWidth={2}
             />
@@ -146,9 +148,11 @@ export const GameCell: React.FC<GameCellProps> = ({
 };
 
 const styles = StyleSheet.create({
+  cellContainer: {
+    margin: 2,
+  },
   cell: {
     borderRadius: 50,
-    margin: 4,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -167,7 +171,7 @@ const styles = StyleSheet.create({
     elevation: 10,
   },
   kingCell: {
-    borderWidth: 3,
+    borderWidth: 2,
     borderColor: '#ffffff',
     shadowColor: '#000',
     shadowOpacity: 0.4,

@@ -11,6 +11,10 @@ import {
 import { GameBoard } from '@/components/GameBoard';
 import { PlayerIndicator } from '@/components/PlayerIndicator';
 import { ScoreBoard } from '@/components/ScoreBoard';
+import { PersistentScoreDisplay } from '@/components/PersistentScoreDisplay';
+import { ScoreAnimation } from '@/components/ScoreAnimation';
+import { AchievementNotification } from '@/components/AchievementNotification';
+import { ScoreEventFeed } from '@/components/ScoreEventFeed';
 import { GameModal } from '@/components/GameModal';
 import { GameModeSelector } from '@/components/GameModeSelector';
 import { GameVariantSelector } from '@/components/GameVariantSelector';
@@ -18,20 +22,26 @@ import { KingCounter } from '@/components/KingCounter';
 import { AIThinkingIndicator } from '@/components/AIThinkingIndicator';
 import { useGameLogic } from '@/hooks/useGameLogic';
 import { useGameStats } from '@/hooks/useGameStats';
+import { usePersistentScoring } from '@/hooks/usePersistentScoring';
+import { usePlayerManager } from '@/hooks/usePlayerManager';
 import { useAIOpponent } from '@/hooks/useAIOpponent';
 import { RotateCcw, Settings as SettingsIcon } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
 export default function GameScreen() {
+  const { currentPlayer, getOrCreateDefaultPlayer } = usePlayerManager();
+  const [gameStartTime, setGameStartTime] = useState<number>(Date.now());
+  
   const {
     board,
-    currentPlayer,
+    currentPlayer: gameCurrentPlayer,
     gameState,
     winCondition,
     isAnimating,
     gameMode,
     gameVariant,
     kingConversions,
+    cascadeLevel,
     makeMove,
     resetGame,
     isColumnFull,
@@ -43,38 +53,85 @@ export default function GameScreen() {
 
   const { stats, updateStats, resetStats } = useGameStats();
   const { makeAIMove } = useAIOpponent();
+  
+  // Initialize persistent scoring
+  const persistentScoring = usePersistentScoring({
+    gameVariant,
+    gameMode: gameMode.type,
+    aiDifficulty: gameMode.aiDifficulty,
+    playerId: currentPlayer?.id || 'temp',
+    playerColor: 'yellow', // Human player is always yellow
+  });
+
   const [showModeSelector, setShowModeSelector] = useState(false);
   const [showVariantSelector, setShowVariantSelector] = useState(false);
   const [isAIThinking, setIsAIThinking] = useState(false);
+  const [newAchievement, setNewAchievement] = useState<any>(null);
 
+  // Initialize player if needed
+  useEffect(() => {
+    const initPlayer = async () => {
+      if (!currentPlayer) {
+        await getOrCreateDefaultPlayer();
+      }
+    };
+    initPlayer();
+  }, [currentPlayer, getOrCreateDefaultPlayer]);
+
+  // Handle game completion
   useEffect(() => {
     if (gameState === 'won' && winCondition) {
       updateStats(winCondition.player, gameVariant);
+      
+      // Complete persistent scoring session
+      const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+      const kingCounts = getKingCounts();
+      
+      persistentScoring.completeSession(
+        winCondition.player === 'yellow' ? currentPlayer?.id || null : (gameMode.type === 'ai' ? 'ai' : 'opponent'),
+        winCondition.type,
+        duration,
+        kingCounts.red + kingCounts.yellow,
+        cascadeLevel,
+        false // TODO: Calculate perfect game
+      );
+      
+      // Check for ultimate victory achievement
+      if (winCondition.type === 'king') {
+        persistentScoring.awardAchievement(
+          'ultimate_victory',
+          'Ultimate Champion',
+          'Win with 3 matching kings',
+          1500
+        );
+      }
     } else if (gameState === 'draw') {
       updateStats('draw', gameVariant);
+      
+      const duration = Math.floor((Date.now() - gameStartTime) / 1000);
+      persistentScoring.completeSession(null, 'timeout', duration);
     }
-  }, [gameState, winCondition, updateStats, gameVariant]);
+  }, [gameState, winCondition, updateStats, gameVariant, persistentScoring, gameStartTime, currentPlayer, gameMode, cascadeLevel, getKingCounts]);
 
   // Handle AI moves
   useEffect(() => {
     const handleAIMove = async () => {
       if (
         gameMode.type === 'ai' &&
-        currentPlayer === 'red' &&
+        gameCurrentPlayer === 'red' &&
         gameState === 'playing' &&
         !isAnimating
       ) {
         setIsAIThinking(true);
         
         try {
-          // Convert board for AI (treat kings as regular pieces for AI logic)
           const aiBoard = board.map(row => 
             row.map(cell => getPlayerFromCell(cell))
           );
           
           const aiMove = await makeAIMove(aiBoard, gameMode.aiDifficulty);
           if (aiMove) {
-            await makeMove(aiMove.column);
+            await makeMove(aiMove.column, handleMatchFound);
           }
         } catch (error) {
           console.error('AI move failed:', error);
@@ -84,14 +141,62 @@ export default function GameScreen() {
       }
     };
 
-    // Small delay to ensure UI updates
     const timer = setTimeout(handleAIMove, 100);
     return () => clearTimeout(timer);
-  }, [gameMode, currentPlayer, gameState, isAnimating, board, makeAIMove, makeMove, getPlayerFromCell]);
+  }, [gameMode, gameCurrentPlayer, gameState, isAnimating, board, makeAIMove, makeMove, getPlayerFromCell]);
+
+  // Handle match found callback for scoring
+  const handleMatchFound = (matchSize: number, cascadeLevel: number, isKing: boolean, simultaneousMatches: number) => {
+    // Award points for the match
+    persistentScoring.awardMatchPoints(matchSize, cascadeLevel, simultaneousMatches, isKing);
+    
+    // Check for achievements
+    const kingCounts = getKingCounts();
+    
+    // First match achievement
+    if (persistentScoring.gameScore.totalMatches === 0) {
+      persistentScoring.awardAchievement(
+        'first_match',
+        'First Blood',
+        'Make your first match',
+        50
+      );
+    }
+    
+    // Cascade master achievement
+    if (cascadeLevel >= 5) {
+      persistentScoring.awardAchievement(
+        'cascade_master',
+        'Cascade Master',
+        'Achieve 5+ cascades in a single turn',
+        1000
+      );
+    }
+    
+    // King maker achievement (Classic mode)
+    if (gameVariant === 'classic' && kingCounts.red + kingCounts.yellow >= 5) {
+      persistentScoring.awardAchievement(
+        'king_maker',
+        'King Maker',
+        'Create 5 kings in Classic mode',
+        750
+      );
+    }
+    
+    // Combo master achievement
+    if (simultaneousMatches >= 3) {
+      persistentScoring.awardAchievement(
+        'combo_master',
+        'Combo Master',
+        'Trigger 3 simultaneous matches',
+        800
+      );
+    }
+  };
 
   const handleColumnPress = async (col: number) => {
     // Prevent human moves during AI turn or when AI is thinking
-    if (gameMode.type === 'ai' && (currentPlayer === 'red' || isAIThinking)) {
+    if (gameMode.type === 'ai' && (gameCurrentPlayer === 'red' || isAIThinking)) {
       return;
     }
 
@@ -102,7 +207,8 @@ export default function GameScreen() {
       return;
     }
 
-    const success = await makeMove(col);
+    persistentScoring.incrementMoves();
+    const success = await makeMove(col, handleMatchFound);
     if (success && Platform.OS !== 'web') {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     }
@@ -110,6 +216,8 @@ export default function GameScreen() {
 
   const handlePlayAgain = () => {
     resetGame();
+    persistentScoring.resetSession();
+    setGameStartTime(Date.now());
   };
 
   const handleResetGame = () => {
@@ -117,6 +225,8 @@ export default function GameScreen() {
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
     }
     resetGame();
+    persistentScoring.resetSession();
+    setGameStartTime(Date.now());
   };
 
   const handleResetStats = () => {
@@ -128,9 +238,9 @@ export default function GameScreen() {
 
   const getCurrentPlayerDisplay = () => {
     if (gameMode.type === 'ai') {
-      return currentPlayer === 'red' ? 'AI' : 'You';
+      return gameCurrentPlayer === 'red' ? 'AI' : 'You';
     }
-    return currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1);
+    return gameCurrentPlayer.charAt(0).toUpperCase() + gameCurrentPlayer.slice(1);
   };
 
   const getGameTitle = () => {
@@ -144,6 +254,16 @@ export default function GameScreen() {
   };
 
   const kingCounts = getKingCounts();
+
+  if (!currentPlayer) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Initializing player...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -186,6 +306,8 @@ export default function GameScreen() {
             onVariantChange={(variant) => {
               setGameVariant(variant);
               setShowVariantSelector(false);
+              persistentScoring.resetSession();
+              setGameStartTime(Date.now());
             }}
           />
         )}
@@ -196,11 +318,23 @@ export default function GameScreen() {
             onModeChange={(mode) => {
               setGameMode(mode);
               setShowModeSelector(false);
+              persistentScoring.resetSession();
+              setGameStartTime(Date.now());
             }}
           />
         )}
 
+        <PersistentScoreDisplay 
+          gameScore={persistentScoring.gameScore} 
+          showLifetimeStats={true}
+          showMultiplier={true}
+        />
+        
         <ScoreBoard stats={stats} gameVariant={gameVariant} />
+
+        {persistentScoring.gameScore.scoreEvents.length > 0 && (
+          <ScoreEventFeed events={persistentScoring.gameScore.scoreEvents} />
+        )}
 
         {gameVariant === 'classic' && (
           <KingCounter 
@@ -210,7 +344,7 @@ export default function GameScreen() {
         )}
 
         <PlayerIndicator 
-          currentPlayer={gameMode.type === 'ai' && currentPlayer === 'red' ? 'red' : currentPlayer}
+          currentPlayer={gameMode.type === 'ai' && gameCurrentPlayer === 'red' ? 'red' : gameCurrentPlayer}
           isAnimating={isAnimating || isAIThinking}
           displayName={getCurrentPlayerDisplay()}
         />
@@ -220,13 +354,26 @@ export default function GameScreen() {
           difficulty={gameMode.aiDifficulty}
         />
 
-        <GameBoard
-          board={board}
-          winCondition={winCondition}
-          onColumnPress={handleColumnPress}
-          isAnimating={isAnimating || isAIThinking}
-          kingConversions={kingConversions}
-        />
+        <View style={styles.gameContainer}>
+          <GameBoard
+            board={board}
+            winCondition={winCondition}
+            onColumnPress={handleColumnPress}
+            isAnimating={isAnimating || isAIThinking}
+            kingConversions={kingConversions}
+          />
+          
+          {/* Score Animations Overlay */}
+          {persistentScoring.scoreAnimations.map((animation) => (
+            <ScoreAnimation
+              key={animation.id}
+              animation={animation}
+              onComplete={(id) => {
+                // Animation cleanup is handled in usePersistentScoring hook
+              }}
+            />
+          ))}
+        </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity
@@ -243,7 +390,7 @@ export default function GameScreen() {
             onPress={handleResetStats}
             activeOpacity={0.8}
           >
-            <Text style={styles.clearStatsButtonText}>Clear Stats</Text>
+            <Text style={styles.clearStatsButtonText}>Clear Session Stats</Text>
           </TouchableOpacity>
         </View>
 
@@ -257,6 +404,13 @@ export default function GameScreen() {
           onClose={handlePlayAgain}
         />
       </ScrollView>
+
+      {/* Achievement Notification */}
+      <AchievementNotification
+        achievement={newAchievement}
+        visible={!!newAchievement}
+        onHide={() => setNewAchievement(null)}
+      />
     </SafeAreaView>
   );
 }
@@ -265,6 +419,16 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f8fafc',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontFamily: 'Orbitron-Regular',
   },
   scrollContent: {
     padding: 20,
@@ -314,6 +478,11 @@ const styles = StyleSheet.create({
     color: '#4f46e5',
     marginLeft: 6,
     fontFamily: 'Orbitron-Regular',
+  },
+  gameContainer: {
+    position: 'relative',
+    marginBottom: 24,
+    alignItems: 'center',
   },
   buttonContainer: {
     marginTop: 24,

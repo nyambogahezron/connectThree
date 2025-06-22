@@ -1,27 +1,40 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   SafeAreaView,
   ScrollView,
+  TouchableOpacity,
 } from 'react-native';
-import { Trophy, Medal, Users } from 'lucide-react-native';
+import { LeaderboardDisplay } from '@/components/LeaderboardDisplay';
+import { DatabaseService } from '@/lib/services/database';
+import { usePlayerManager } from '@/hooks/usePlayerManager';
+import { Trophy, ChartBar as BarChart3, Users, Settings, Plus } from 'lucide-react-native';
 
 export default function LeaderboardScreen() {
-  const mockStats = [
-    { rank: 1, name: 'Red Player', wins: 15, games: 20, winRate: 75 },
-    { rank: 2, name: 'Yellow Player', wins: 12, games: 18, winRate: 67 },
-  ];
+  const { currentPlayer, createPlayer, allPlayers } = usePlayerManager();
+  const [playerStats, setPlayerStats] = useState<any>(null);
+  const [showCreatePlayer, setShowCreatePlayer] = useState(false);
 
-  const getRankIcon = (rank: number) => {
-    switch (rank) {
-      case 1:
-        return <Trophy size={24} color="#fbbf24" />;
-      case 2:
-        return <Medal size={24} color="#9ca3af" />;
-      default:
-        return <Users size={24} color="#6b7280" />;
+  useEffect(() => {
+    const loadPlayerStats = async () => {
+      if (currentPlayer) {
+        const stats = await DatabaseService.getPlayerStats(currentPlayer.id);
+        setPlayerStats(stats);
+      }
+    };
+
+    loadPlayerStats();
+  }, [currentPlayer]);
+
+  const handleCreatePlayer = async () => {
+    try {
+      const playerName = `Player ${allPlayers.length + 1}`;
+      await createPlayer(playerName);
+      setShowCreatePlayer(false);
+    } catch (error) {
+      console.error('Failed to create player:', error);
     }
   };
 
@@ -29,40 +42,80 @@ export default function LeaderboardScreen() {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContent}>
         <View style={styles.header}>
-          <Text style={styles.title}>Leaderboard</Text>
-          <Text style={styles.subtitle}>Top Players</Text>
+          <Trophy size={32} color="#fbbf24" />
+          <Text style={styles.title}>Leaderboards</Text>
+          <Text style={styles.subtitle}>Compete with the best players</Text>
         </View>
 
-        <View style={styles.leaderboardContainer}>
-          {mockStats.map((player) => (
-            <View key={player.rank} style={styles.playerCard}>
-              <View style={styles.rankContainer}>
-                {getRankIcon(player.rank)}
-                <Text style={styles.rankText}>#{player.rank}</Text>
+        {/* Player Quick Stats */}
+        {currentPlayer && playerStats && (
+          <View style={styles.playerStatsCard}>
+            <View style={styles.playerStatsHeader}>
+              <Users size={20} color="#4f46e5" />
+              <Text style={styles.playerStatsTitle}>Your Stats</Text>
+            </View>
+            
+            <View style={styles.statsGrid}>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{playerStats.totalGamesPlayed}</Text>
+                <Text style={styles.statLabel}>Games</Text>
               </View>
-              
-              <View style={styles.playerInfo}>
-                <Text style={styles.playerName}>{player.name}</Text>
-                <Text style={styles.playerStats}>
-                  {player.wins} wins • {player.games} games
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{playerStats.totalWins}</Text>
+                <Text style={styles.statLabel}>Wins</Text>
+              </View>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>
+                  {playerStats.totalGamesPlayed > 0 
+                    ? `${((playerStats.totalWins / playerStats.totalGamesPlayed) * 100).toFixed(1)}%`
+                    : '0%'
+                  }
                 </Text>
+                <Text style={styles.statLabel}>Win Rate</Text>
               </View>
-
-              <View style={styles.winRateContainer}>
-                <Text style={styles.winRate}>{player.winRate}%</Text>
-                <Text style={styles.winRateLabel}>Win Rate</Text>
+              <View style={styles.statItem}>
+                <Text style={styles.statValue}>{playerStats.currentWinStreak}</Text>
+                <Text style={styles.statLabel}>Streak</Text>
               </View>
             </View>
-          ))}
+
+            <View style={styles.rankInfo}>
+              <BarChart3 size={16} color="#059669" />
+              <Text style={styles.rankText}>
+                Global Rank: #{playerStats.globalRank || 'Unranked'}
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Main Leaderboard */}
+        <LeaderboardDisplay
+          category="global"
+          limit={20}
+          currentPlayerId={currentPlayer?.id}
+        />
+
+        {/* Quick Actions */}
+        <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={styles.actionButton}
+            onPress={handleCreatePlayer}
+          >
+            <Plus size={20} color="#ffffff" />
+            <Text style={styles.actionButtonText}>Add Player</Text>
+          </TouchableOpacity>
         </View>
 
-        <View style={styles.infoContainer}>
-          <Text style={styles.infoTitle}>How to Play</Text>
+        {/* Game Rules */}
+        <View style={styles.rulesContainer}>
+          <Text style={styles.rulesTitle}>Scoring System</Text>
           <View style={styles.rulesList}>
-            <Text style={styles.rule}>• Drop discs into columns</Text>
-            <Text style={styles.rule}>• Get 3 in a row to win</Text>
-            <Text style={styles.rule}>• Horizontal, vertical, or diagonal</Text>
-            <Text style={styles.rule}>• First to connect 3 wins!</Text>
+            <Text style={styles.rule}>• 3-match: 100 points</Text>
+            <Text style={styles.rule}>• 4-match: 200 points</Text>
+            <Text style={styles.rule}>• 5+ match: 300 points</Text>
+            <Text style={styles.rule}>• King matches: 2x multiplier</Text>
+            <Text style={styles.rule}>• Cascades: 1.5x, 2x, 3x multiplier</Text>
+            <Text style={styles.rule}>• Achievements: Bonus points</Text>
           </View>
         </View>
       </ScrollView>
@@ -81,7 +134,7 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: 'center',
-    marginBottom: 30,
+    marginBottom: 24,
     marginTop: 10,
   },
   title: {
@@ -89,6 +142,7 @@ const styles = StyleSheet.create({
     fontWeight: '900',
     color: '#1e293b',
     textAlign: 'center',
+    marginTop: 12,
     marginBottom: 4,
     letterSpacing: -1,
     fontFamily: 'Orbitron-Black',
@@ -100,71 +154,101 @@ const styles = StyleSheet.create({
     fontWeight: '500',
     fontFamily: 'Orbitron-Regular',
   },
-  leaderboardContainer: {
-    marginBottom: 30,
-  },
-  playerCard: {
+  playerStatsCard: {
     backgroundColor: '#ffffff',
-    borderRadius: 15,
+    borderRadius: 16,
     padding: 20,
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
+    marginBottom: 24,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
-      height: 2,
+      height: 4,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 8,
+    elevation: 5,
+    borderWidth: 2,
+    borderColor: '#4f46e5',
   },
-  rankContainer: {
+  playerStatsHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginRight: 16,
+    marginBottom: 16,
   },
-  rankText: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#374151',
-    marginLeft: 8,
-    fontFamily: 'Orbitron-Bold',
-  },
-  playerInfo: {
-    flex: 1,
-  },
-  playerName: {
+  playerStatsTitle: {
     fontSize: 18,
     fontWeight: '700',
     color: '#1f2937',
-    marginBottom: 4,
+    marginLeft: 8,
     fontFamily: 'Orbitron-Bold',
   },
-  playerStats: {
-    fontSize: 14,
-    color: '#6b7280',
-    fontWeight: '500',
-    fontFamily: 'Orbitron-Regular',
+  statsGrid: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 16,
   },
-  winRateContainer: {
+  statItem: {
     alignItems: 'center',
+    flex: 1,
   },
-  winRate: {
+  statValue: {
     fontSize: 20,
     fontWeight: '800',
-    color: '#059669',
+    color: '#1f2937',
     fontFamily: 'Orbitron-Black',
   },
-  winRateLabel: {
+  statLabel: {
     fontSize: 12,
     color: '#6b7280',
-    fontWeight: '500',
+    marginTop: 4,
     fontFamily: 'Orbitron-Regular',
   },
-  infoContainer: {
+  rankInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingTop: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e5e7eb',
+  },
+  rankText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#059669',
+    marginLeft: 6,
+    fontFamily: 'Orbitron-Bold',
+  },
+  actionsContainer: {
+    marginTop: 24,
+    marginBottom: 24,
+  },
+  actionButton: {
+    backgroundColor: '#4f46e5',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    shadowColor: '#4f46e5',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  actionButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+    marginLeft: 8,
+    fontFamily: 'Orbitron-Bold',
+  },
+  rulesContainer: {
     backgroundColor: '#ffffff',
-    borderRadius: 15,
+    borderRadius: 16,
     padding: 20,
     shadowColor: '#000',
     shadowOffset: {
@@ -175,7 +259,7 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 3,
   },
-  infoTitle: {
+  rulesTitle: {
     fontSize: 20,
     fontWeight: '700',
     color: '#1f2937',
@@ -187,10 +271,10 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   rule: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#374151',
     fontWeight: '500',
-    lineHeight: 24,
+    lineHeight: 20,
     fontFamily: 'Orbitron-Regular',
   },
 });
