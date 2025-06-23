@@ -10,7 +10,9 @@ import {
 } from '@expo-google-fonts/orbitron';
 import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import * as SplashScreen from 'expo-splash-screen';
-import { initializeDatabase } from '@/lib/database';
+import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
+import migrations from '../database/migrations/migrations';
+import { db } from '@/database';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -21,11 +23,15 @@ SplashScreen.setOptions({
 
 export default function RootLayout() {
 	const [appIsReady, setAppIsReady] = React.useState(false);
+	const { success, error } = useMigrations(db, migrations);
 
 	React.useEffect(() => {
 		async function prepare() {
-			// initialize database
-			await initializeDatabase();
+			if (!success && !error) {
+				console.warn('Running migrations...');
+				console.log(error)
+			}
+
 			try {
 				const [fontsLoaded, fontError] = useFonts({
 					'Orbitron-Regular': Orbitron_400Regular,

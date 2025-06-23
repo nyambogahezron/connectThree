@@ -110,7 +110,7 @@ CREATE TABLE `score_events` (
 	`player_id` text NOT NULL,
 	`event_type` text NOT NULL,
 	`points` integer NOT NULL,
-	`multiplier` real DEFAULT 1.0 NOT NULL,
+	`multiplier` real DEFAULT 1 NOT NULL,
 	`description` text NOT NULL,
 	`match_size` integer,
 	`cascade_level` integer,
