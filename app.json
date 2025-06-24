@@ -1,77 +1,83 @@
 {
-  "expo": {
-    "name": "Connect Three",
-    "slug": "connectThree",
-    "version": "1.0.0",
-    "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
-    "scheme": "connectthree",
-    "userInterfaceStyle": "automatic",
-    "newArchEnabled": true,
-    "ios": {
-      "supportsTablet": true
-    },
-    "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
-      "package": "com.hezron.connectThree"
-    },
-    "web": {
-      "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
-    },
-    "plugins": [
-      "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "expo-splash-screen": {
-            "backgroundColor": "#F8FAFC",
-            "image": "./assets/images/splash-icon.png",
-            "dark": {
-              "image": "./assets/images/splash-icon-dark.png",
-              "backgroundColor": "#000000"
-            },
-            "imageWidth": 200
-          }
-        }
-      ],
-      [
-        "expo-sqlite",
-        {
-          "enableFTS": true,
-          "useSQLCipher": true,
-          "android": {
-            "enableFTS": false,
-            "useSQLCipher": false
-          },
-          "ios": {
-            "customBuildFlags": [
-              "-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"
-            ]
-          }
-        }
-      ],
-      "expo-web-browser"
-    ],
-    "experiments": {
-      "typedRoutes": true
-    },
-    "extra": {
-      "router": {},
-      "eas": {
-        "projectId": "39913d40-c8e4-4f11-9b0a-5d039b83e7a8"
-      }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/39913d40-c8e4-4f11-9b0a-5d039b83e7a8"
-    }
-  }
+	"expo": {
+		"name": "Connect Three",
+		"slug": "connectThree",
+		"version": "1.0.0",
+		"orientation": "portrait",
+		"icon": "./assets/images/icon.png",
+		"scheme": "connectthree",
+		"userInterfaceStyle": "automatic",
+		"newArchEnabled": true,
+		"splash": {
+			"image": "./assets/images/splash-icon.png",
+			"resizeMode": "contain",
+			"backgroundColor": "#ffffff"
+		},
+		"ios": {
+			"supportsTablet": true,
+			"bundleIdentifier": "com.hezron.connectThree"
+		},
+		"android": {
+			"adaptiveIcon": {
+				"foregroundImage": "./assets/images/adaptive-icon.png",
+				"backgroundColor": "#ffffff"
+			},
+			"edgeToEdgeEnabled": true,
+			"package": "com.hezron.connectThree"
+		},
+		"web": {
+			"bundler": "metro",
+			"output": "static",
+			"favicon": "./assets/images/favicon.png"
+		},
+		"plugins": [
+			"expo-router",
+			[
+				"expo-splash-screen",
+				{
+					"expo-splash-screen": {
+						"backgroundColor": "#F8FAFC",
+						"image": "./assets/images/splash-icon.png",
+						"dark": {
+							"image": "./assets/images/splash-icon-dark.png",
+							"backgroundColor": "#000000"
+						},
+						"imageWidth": 200
+					}
+				}
+			],
+			[
+				"expo-sqlite",
+				{
+					"enableFTS": true,
+					"useSQLCipher": true,
+					"android": {
+						"enableFTS": false,
+						"useSQLCipher": false
+					},
+					"ios": {
+						"customBuildFlags": [
+							"-DSQLITE_ENABLE_DBSTAT_VTAB=1 -DSQLITE_ENABLE_SNAPSHOT=1"
+						]
+					}
+				}
+			],
+			"expo-web-browser"
+		],
+		"experiments": {
+			"typedRoutes": true
+		},
+		"extra": {
+			"router": {},
+			"eas": {
+				"projectId": "39913d40-c8e4-4f11-9b0a-5d039b83e7a8"
+			}
+		},
+		"runtimeVersion": {
+			"policy": "appVersion"
+		},
+		"updates": {
+			"url": "https://u.expo.dev/39913d40-c8e4-4f11-9b0a-5d039b83e7a8"
+		}
+	}
 }
