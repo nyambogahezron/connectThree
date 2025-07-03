@@ -11,7 +11,7 @@
 		"splash": {
 			"image": "./assets/images/splash-icon.png",
 			"resizeMode": "contain",
-			"backgroundColor": "#ffffff"
+			"backgroundColor": "#1268B9"
 		},
 		"ios": {
 			"supportsTablet": true,
@@ -20,7 +20,7 @@
 		"android": {
 			"adaptiveIcon": {
 				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#ffffff"
+				"backgroundColor": "#1268B9"
 			},
 			"edgeToEdgeEnabled": true,
 			"package": "com.hezron.connectThree"
@@ -32,20 +32,6 @@
 		},
 		"plugins": [
 			"expo-router",
-			[
-				"expo-splash-screen",
-				{
-					"expo-splash-screen": {
-						"backgroundColor": "#F8FAFC",
-						"image": "./assets/images/splash-icon.png",
-						"dark": {
-							"image": "./assets/images/splash-icon-dark.png",
-							"backgroundColor": "#000000"
-						},
-						"imageWidth": 200
-					}
-				}
-			],
 			[
 				"expo-sqlite",
 				{
