@@ -289,7 +289,6 @@ export default function TutorialScreen() {
 				colors={['#0f172a', '#1e293b', '#334155']}
 				style={styles.gradient}
 			>
-				{/* Skip Button */}
 				<TouchableOpacity style={styles.skipButton} onPress={skipTutorial}>
 					<SkipForward size={16} color='#ffffff' />
 					<Text style={styles.skipText}>Skip Tutorial</Text>
@@ -322,17 +321,14 @@ export default function TutorialScreen() {
 					<Text style={styles.description}>{currentStepData.description}</Text>
 					<Text style={styles.instruction}>{currentStepData.instruction}</Text>
 
-					{/* Interactive Demo */}
 					<View style={styles.demoContainer}>{renderMiniBoard()}</View>
 
-					{/* Reset Demo Button */}
 					<TouchableOpacity style={styles.resetButton} onPress={resetDemo}>
 						<RotateCcw size={16} color='#64748b' />
 						<Text style={styles.resetText}>Reset Demo</Text>
 					</TouchableOpacity>
 				</Animated.View>
 
-				{/* Navigation */}
 				<View style={styles.navigationContainer}>
 					<TouchableOpacity style={styles.nextButton} onPress={nextStep}>
 						<Text style={styles.nextButtonText}>

@@ -14,7 +14,6 @@ import {
 	Trophy,
 	ChartBar as BarChart3,
 	Users,
-	Settings,
 	Plus,
 } from 'lucide-react-native';
 

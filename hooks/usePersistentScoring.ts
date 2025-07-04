@@ -1,12 +1,12 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { DatabaseService } from '@/services/database';
-import { GameVariant } from '@/types/game';
+import { GameVariant } from '@/interfaces/game';
 import {
 	GameScore,
 	ScoreEvent,
 	Achievement,
 	ScoreAnimation,
-} from '@/types/scoring';
+} from '@/interfaces/scoring';
 
 interface PersistentScoringConfig {
 	gameVariant: GameVariant;

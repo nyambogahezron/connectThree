@@ -18,7 +18,7 @@ import {
 	type PlayerStats,
 } from '../database/schema';
 import { eq, desc, asc, and, sql, count, avg, max, sum } from 'drizzle-orm';
-import { GameVariant } from '@/types/game';
+import { GameVariant } from '@/interfaces/game';
 
 // Generate unique IDs
 const generateId = () =>
