@@ -1,4 +1,4 @@
-import { db } from '../database';
+import { db } from '../db';
 import {
 	players,
 	gameSessions,
@@ -16,7 +16,7 @@ import {
 	type GameSession,
 	type PlayerScore,
 	type PlayerStats,
-} from '../database/schema';
+} from '../db/schema';
 import { eq, desc, asc, and, sql, count, avg, max, sum } from 'drizzle-orm';
 import { GameVariant } from '@/interfaces/game';
 
@@ -27,10 +27,13 @@ const generateId = () =>
 export class DatabaseService {
 	// Player management
 	static async createPlayer(name: string, avatar?: string): Promise<Player> {
+		const now = new Date();
 		const newPlayer: NewPlayer = {
 			id: generateId(),
 			name,
 			avatar,
+			createdAt: now,
+			updatedAt: now,
 		};
 
 		const [player] = await db.insert(players).values(newPlayer).returning();
@@ -38,6 +41,7 @@ export class DatabaseService {
 		// Initialize player stats
 		await db.insert(playerStats).values({
 			playerId: player.id,
+			updatedAt: now,
 		});
 
 		return player;
@@ -77,6 +81,7 @@ export class DatabaseService {
 			gameMode,
 			aiDifficulty,
 			status: 'active',
+			startedAt: new Date(),
 		};
 
 		const [session] = await db
@@ -185,12 +190,16 @@ export class DatabaseService {
 	static async addScoreEvent(
 		sessionId: string,
 		playerId: string,
-		eventData: Omit<NewScoreEvent, 'id' | 'sessionId' | 'playerId'>
+		eventData: Omit<
+			NewScoreEvent,
+			'id' | 'sessionId' | 'playerId' | 'timestamp'
+		>
 	): Promise<void> {
 		const newEvent: NewScoreEvent = {
 			id: generateId(),
 			sessionId,
 			playerId,
+			timestamp: new Date(),
 			...eventData,
 		};
 
@@ -233,6 +242,7 @@ export class DatabaseService {
 			achievementName,
 			achievementDescription,
 			points,
+			unlockedAt: new Date(),
 			sessionId,
 		};
 
@@ -290,7 +300,10 @@ export class DatabaseService {
 
 		if (!stats) {
 			// Create initial stats if they don't exist
-			await db.insert(playerStats).values({ playerId });
+			await db.insert(playerStats).values({
+				playerId,
+				updatedAt: new Date(),
+			});
 		}
 
 		const isConnect3 = gameVariant === 'connect3';
@@ -426,6 +439,7 @@ export class DatabaseService {
 			.limit(100);
 
 		// Insert new leaderboard entries
+		const now = new Date();
 		const leaderboardEntries = topPlayers.map((player, index) => ({
 			id: generateId(),
 			category: 'global' as const,
@@ -435,6 +449,7 @@ export class DatabaseService {
 			rank: index + 1,
 			gamesPlayed: player.gamesPlayed,
 			winRate: player.winRate,
+			updatedAt: now,
 		}));
 
 		if (leaderboardEntries.length > 0) {
@@ -475,6 +490,7 @@ export class DatabaseService {
 			.limit(100);
 
 		// Insert new leaderboard entries
+		const now = new Date();
 		const leaderboardEntries = topPlayers.map((player, index) => ({
 			id: generateId(),
 			category: variant,
@@ -484,6 +500,7 @@ export class DatabaseService {
 			rank: index + 1,
 			gamesPlayed: player.gamesPlayed,
 			winRate: player.winRate,
+			updatedAt: now,
 		}));
 
 		if (leaderboardEntries.length > 0) {

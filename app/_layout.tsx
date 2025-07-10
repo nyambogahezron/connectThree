@@ -10,9 +10,11 @@ import {
 } from '@expo-google-fonts/orbitron';
 import { PressStart2P_400Regular } from '@expo-google-fonts/press-start-2p';
 import * as SplashScreen from 'expo-splash-screen';
+
 import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
-import migrations from '../database/migrations/migrations';
-import { db } from '@/database';
+import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
+import migrations from '../drizzle/migrations';
+import { db } from '@/db';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -25,29 +27,41 @@ export default function RootLayout() {
 	const [appIsReady, setAppIsReady] = React.useState(false);
 	const { success, error } = useMigrations(db, migrations);
 
-	React.useEffect(() => {
-		async function prepare() {
-			if (!success && !error) {
-				console.warn('Running migrations...');
-				console.log(error)
-			}
+	// Move useFonts to the top level - hooks must be called in the same order every time
+	const [fontsLoaded, fontError] = useFonts({
+		'Orbitron-Regular': Orbitron_400Regular,
+		'Orbitron-Bold': Orbitron_700Bold,
+		'Orbitron-Black': Orbitron_900Black,
+		'PressStart2P-Regular': PressStart2P_400Regular,
+	});
 
-			try {
-				const [fontsLoaded, fontError] = useFonts({
-					'Orbitron-Regular': Orbitron_400Regular,
-					'Orbitron-Bold': Orbitron_700Bold,
-					'Orbitron-Black': Orbitron_900Black,
-					'PressStart2P-Regular': PressStart2P_400Regular,
-				});
-			} catch (e) {
-				console.warn(e);
-			} finally {
+	useDrizzleStudio(db.$client);
+
+	React.useEffect(() => {
+		const prepare = async () => {
+			// Log migration status
+			console.log('Migration status:', { success, error });
+
+			// Wait for migrations to complete successfully
+			if (success === true && fontsLoaded && !error) {
+				console.log('✅ Migrations and fonts loaded successfully');
 				setAppIsReady(true);
+			} else if (error) {
+				console.error('❌ Migration error:', error);
+				// Don't set ready if migrations failed - this is critical
+			} else if (fontError) {
+				console.warn('⚠️ Font loading error:', fontError);
+				// Fonts are not critical, allow app to start if migrations succeeded
+				if (success === true) {
+					setAppIsReady(true);
+				}
+			} else if (success === false) {
+				console.log('⏳ Migrations still running...');
 			}
-		}
+		};
 
 		prepare();
-	}, []);
+	}, [success, error, fontsLoaded, fontError]);
 
 	const onLayoutRootView = React.useCallback(() => {
 		if (appIsReady) {

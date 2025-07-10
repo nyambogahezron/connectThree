@@ -10,7 +10,6 @@
 		"newArchEnabled": true,
 		"splash": {
 			"image": "./assets/images/splash-icon.png",
-			"resizeMode": "cover",
 			"backgroundColor": "#1268B9"
 		},
 		"ios": {
@@ -19,8 +18,8 @@
 		},
 		"android": {
 			"adaptiveIcon": {
-				"foregroundImage": "./assets/images/adaptive-icon.png",
-				"backgroundColor": "#1268B9"
+				"foregroundImage": "./assets/images/adaptive-icon/foreground.png",
+				"backgroundImage": "./assets/images/adaptive-icon/background.png"
 			},
 			"edgeToEdgeEnabled": true,
 			"package": "com.hezron.connectThree"

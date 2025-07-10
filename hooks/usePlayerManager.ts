@@ -1,7 +1,8 @@
 import { useState, useCallback, useEffect } from 'react';
 import { DatabaseService } from '@/services/database';
-import { Player } from '@/database/schema';
+import { Player } from '@/db/schema';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useDatabaseReady } from './useDatabaseReady';
 
 const CURRENT_PLAYER_KEY = 'current_player_id';
 
@@ -9,6 +10,7 @@ export const usePlayerManager = () => {
 	const [currentPlayer, setCurrentPlayer] = useState<Player | null>(null);
 	const [allPlayers, setAllPlayers] = useState<Player[]>([]);
 	const [isLoading, setIsLoading] = useState(true);
+	const { isReady: isDatabaseReady } = useDatabaseReady();
 
 	// Load current player from storage
 	const loadCurrentPlayer = useCallback(async () => {
@@ -115,14 +117,25 @@ export const usePlayerManager = () => {
 	// Initialize
 	useEffect(() => {
 		const initialize = async () => {
+			// Wait for database to be ready before performing operations
+			if (!isDatabaseReady) {
+				console.log('Waiting for database to be ready...');
+				return;
+			}
+
 			setIsLoading(true);
-			await loadAllPlayers();
-			await loadCurrentPlayer();
-			setIsLoading(false);
+			try {
+				await loadAllPlayers();
+				await loadCurrentPlayer();
+			} catch (error) {
+				console.error('Failed to initialize player manager:', error);
+			} finally {
+				setIsLoading(false);
+			}
 		};
 
 		initialize();
-	}, [loadAllPlayers, loadCurrentPlayer]);
+	}, [isDatabaseReady, loadAllPlayers, loadCurrentPlayer]);
 
 	return {
 		currentPlayer,

@@ -7,6 +7,7 @@ import {
 	Achievement,
 	ScoreAnimation,
 } from '@/interfaces/scoring';
+import { useDatabaseReady } from './useDatabaseReady';
 
 interface PersistentScoringConfig {
 	gameVariant: GameVariant;
@@ -17,6 +18,8 @@ interface PersistentScoringConfig {
 }
 
 export const usePersistentScoring = (config: PersistentScoringConfig) => {
+	const { isReady: isDatabaseReady } = useDatabaseReady();
+
 	const [gameScore, setGameScore] = useState<GameScore>({
 		currentScore: 0,
 		basePoints: 0,
@@ -39,6 +42,13 @@ export const usePersistentScoring = (config: PersistentScoringConfig) => {
 
 	// Initialize game session
 	const initializeSession = useCallback(async () => {
+		if (!isDatabaseReady) {
+			console.log(
+				'Waiting for database to be ready before initializing scoring session...'
+			);
+			return;
+		}
+
 		try {
 			const session = await DatabaseService.createGameSession(
 				config.gameVariant,
@@ -93,7 +103,7 @@ export const usePersistentScoring = (config: PersistentScoringConfig) => {
 		} catch (error) {
 			console.error('Failed to initialize scoring session:', error);
 		}
-	}, [config]);
+	}, [config, isDatabaseReady]);
 
 	// Calculate base points for a match
 	const calculateBasePoints = useCallback(
@@ -428,10 +438,11 @@ export const usePersistentScoring = (config: PersistentScoringConfig) => {
 
 	// Initialize on mount
 	useEffect(() => {
-		if (!isInitialized) {
+		if (isDatabaseReady && !isInitialized) {
+			console.log('Database is ready, initializing scoring session...');
 			initializeSession();
 		}
-	}, [initializeSession, isInitialized]);
+	}, [isDatabaseReady, initializeSession, isInitialized]);
 
 	return {
 		gameScore,
