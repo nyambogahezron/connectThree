@@ -15,6 +15,7 @@ import { useMigrations } from 'drizzle-orm/expo-sqlite/migrator';
 import { useDrizzleStudio } from 'expo-drizzle-studio-plugin';
 import migrations from '../drizzle/migrations';
 import { db } from '@/db';
+import { HeaderMenu } from '@/components/HeaderMenu';
 
 SplashScreen.preventAutoHideAsync();
 
@@ -27,7 +28,6 @@ export default function RootLayout() {
 	const [appIsReady, setAppIsReady] = React.useState(false);
 	const { success, error } = useMigrations(db, migrations);
 
-	// Move useFonts to the top level - hooks must be called in the same order every time
 	const [fontsLoaded, fontError] = useFonts({
 		'Orbitron-Regular': Orbitron_400Regular,
 		'Orbitron-Bold': Orbitron_700Bold,
@@ -39,24 +39,20 @@ export default function RootLayout() {
 
 	React.useEffect(() => {
 		const prepare = async () => {
-			// Log migration status
 			console.log('Migration status:', { success, error });
 
-			// Wait for migrations to complete successfully
 			if (success === true && fontsLoaded && !error) {
-				console.log('✅ Migrations and fonts loaded successfully');
+				console.log('Migrations and fonts loaded successfully');
 				setAppIsReady(true);
 			} else if (error) {
-				console.error('❌ Migration error:', error);
-				// Don't set ready if migrations failed - this is critical
+				console.error('Migration error:', error);
 			} else if (fontError) {
-				console.warn('⚠️ Font loading error:', fontError);
-				// Fonts are not critical, allow app to start if migrations succeeded
+				console.warn('Font loading error:', fontError);
 				if (success === true) {
 					setAppIsReady(true);
 				}
 			} else if (success === false) {
-				console.log('⏳ Migrations still running...');
+				console.log('Migrations still running...');
 			}
 		};
 
@@ -77,12 +73,32 @@ export default function RootLayout() {
 		<View style={{ flex: 1 }} onLayout={onLayoutRootView}>
 			<Stack screenOptions={{ headerShown: false }}>
 				<Stack.Screen name='onboarding' options={{ headerShown: false }} />
-				<Stack.Screen name='terms' options={{ headerShown: false }} />
-				<Stack.Screen name='tutorial' options={{ headerShown: false }} />
-				<Stack.Screen name='(home)' options={{ headerShown: false }} />
+				<Stack.Screen
+					name='terms'
+					options={{
+						headerShown: true,
+						title: 'Terms & Conditions',
+						headerStyle: { backgroundColor: '#f4511e' },
+						headerTintColor: '#fff',
+						headerTitleStyle: { fontWeight: 'bold' },
+						headerRight: () => <HeaderMenu tintColor='#fff' />,
+					}}
+				/>
+				<Stack.Screen
+					name='tutorial'
+					options={{
+						headerShown: true,
+						title: 'Tutorial',
+						headerStyle: { backgroundColor: '#f4511e' },
+						headerTintColor: '#fff',
+						headerTitleStyle: { fontWeight: 'bold' },
+						headerRight: () => <HeaderMenu tintColor='#fff' />,
+					}}
+				/>
+				<Stack.Screen name='(home)' options={{ headerShown: true }} />
 				<Stack.Screen name='+not-found' />
 			</Stack>
-			<StatusBar style='auto' />
+			<StatusBar style='auto' backgroundColor='#f4511e' />
 		</View>
 	);
 }

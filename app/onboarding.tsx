@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
 	View,
 	Text,
@@ -28,7 +28,7 @@ import {
 } from 'lucide-react-native';
 import * as Haptics from 'expo-haptics';
 
-const { width, height } = Dimensions.get('window');
+const width = Dimensions.get('window').width;
 
 interface OnboardingStep {
 	id: number;
